@@ -25,7 +25,7 @@ const TABLE_PRESETS = [
     sizeY: 34,
     dx0: 25,
     dy0: -5,
-    mapText: `[1, '1']`,
+    mapText: `[1, '1 =1 1']`,
   },
   {
     label: 'Стол 1x2',
@@ -33,7 +33,8 @@ const TABLE_PRESETS = [
     sizeY: 64,
     dx0: 25,
     dy0: -5,
-    mapText: `[1, '2 =1 1']`,
+    mapText: `[1, '2 =1 1'],
+  [2, '3 =1 4']`,
   },
   {
     label: 'Стол 1x3',
@@ -41,7 +42,9 @@ const TABLE_PRESETS = [
     sizeY: 94,
     dx0: 25,
     dy0: -5,
-    mapText: `[1, '3 =1 2 =1 1']`,
+    mapText: `[1, '1 =1 2'], 
+[2, '3 =1 4'], 
+[3, '5 =1 6']`,
   },
   {
     label: 'Стол 1x4',
@@ -49,7 +52,10 @@ const TABLE_PRESETS = [
     sizeY: 124,
     dx0: 25,
     dy0: -5,
-    mapText: `[1, '4 =1 3 =1 2 =1 1']`,
+    mapText: `[1, '1 =1 2'], 
+  [2, '3 =1 4'], 
+  [3, '5 =1 6'], 
+  [4, '7 =1 8']`,
   },
   {
     label: 'Стол 2x1',
@@ -57,25 +63,8 @@ const TABLE_PRESETS = [
     sizeY: 34,
     dx0: 10,
     dy0: -5,
-    mapText: `[1, '1 2']`,
-  },
-  {
-    label: 'Стол 2x2',
-    sizeX: 64,
-    sizeY: 64,
-    dx0: 10,
-    dy0: -5,
-    mapText: `[1, '1 2']
-[1]
-[2, '3 4']`,
-  },
-  {
-    label: 'Стол 3x1',
-    sizeX: 94,
-    sizeY: 34,
-    dx0: -5,
-    dy0: -5,
-    mapText: `[1, '1 2 3']`,
+    mapText: `[1, '1 =2 4'],
+  [2,'=1 2-3']`,
   },
 ];
 
