@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import '/src/index.css';
+import './rect-table.css';
 export const helperMeta = {
   id: 'rect-table',
   title: 'Прямоугольные столы',
@@ -291,7 +291,6 @@ function buildBounds(seatRects, tableRect, rotate, rotatedDxdy) {
 
   return { minX, minY, maxX, maxY };
 }
-
 function NumberInput({ value, onChange, step = 1 }) {
   return (
     <input
@@ -299,7 +298,7 @@ function NumberInput({ value, onChange, step = 1 }) {
       step={step}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="table-tool-input"
+      className="rect-tool-input"
     />
   );
 }
@@ -309,80 +308,58 @@ function TextInput({ value, onChange }) {
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="table-tool-input"
+      className="rect-tool-input"
     />
   );
 }
 
-function Field({ label, children }) {
+function Field({ label, children, hint = '' }) {
   return (
-    <label className="table-tool-field">
-      <div className="table-tool-label">{label}</div>
+    <label className="rect-tool-field">
+      <div className="rect-tool-label-row">
+        <div className="rect-tool-label">{label}</div>
+        {hint ? <div className="rect-tool-field-hint">{hint}</div> : null}
+      </div>
       {children}
     </label>
   );
 }
 
-function MapPreview({ rows }) {
+function QuickRotate({ value, onChange }) {
+  const angles = [0, 15, 30, 45, 60, 75, 90, 120, 135, 150, 180];
+
   return (
-    <div className="table-tool-card">
-      <div className="table-tool-card-title">Карта рядов</div>
-
-      <div className="table-tool-help">
-        <div>
-          <code>[1]</code> — пропуск 1 ряда, можно дроби.
-        </div>
-        <div>
-          <code>[1, '2 =1 1']</code> — ряд 1, места и пропуски.
-        </div>
-        <div>
-          <code>3-5</code> — места 3, 4, 5.
-        </div>
-        <div>
-          <code>6-3</code> или <code>=6-3</code> — места 6, 5, 4, 3.
-        </div>
-        <div>
-          <code>=1</code> = 30px, <code>=0.5</code> = 15px.
-        </div>
-      </div>
-
-      <div className="table-tool-map-list">
-        {rows.map((row, rowIndex) => {
-          if (row.type === 'skip') {
-            return (
-              <div key={`skip-${rowIndex}`} className="table-tool-map-row">
-                <div className="table-tool-map-row-num">—</div>
-                <div className="table-tool-map-skip">
-                  Пропуск: {row.skip} ряда
-                </div>
-              </div>
-            );
+    <div className="rect-tool-angle-list">
+      {angles.map((angle) => (
+        <button
+          key={angle}
+          type="button"
+          className={
+            value === angle
+              ? 'rect-tool-angle-btn is-active'
+              : 'rect-tool-angle-btn'
           }
-
-          return (
-            <div
-              key={`row-${rowIndex}-${row.row}`}
-              className="table-tool-map-row"
-            >
-              <div className="table-tool-map-row-num">{row.row}</div>
-              <div className="table-tool-map-row-body">
-                {row.tokens.map((token, index) =>
-                  token.type === 'seat' ? (
-                    <div key={index} className="table-tool-map-seat">
-                      {token.value}
-                    </div>
-                  ) : (
-                    <div key={index} className="table-tool-map-gap">
-                      = {token.value}
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+          onClick={() => onChange(angle)}
+        >
+          {angle}°
+        </button>
+      ))}
     </div>
+  );
+}
+
+function Section({ title, note = '', actions = null, children }) {
+  return (
+    <section className="rect-tool-card">
+      <div className="rect-tool-section-head">
+        <div>
+          <div className="rect-tool-section-title">{title}</div>
+          {note ? <div className="rect-tool-section-note">{note}</div> : null}
+        </div>
+        {actions}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -404,135 +381,231 @@ function TablePreview({ state, rows, rotatedDxdy }) {
 
   const rotateCx = state.sizeX / 2;
   const rotateCy = state.sizeY / 2;
+  const rotatePivotX = baseX + rotateCx;
+  const rotatePivotY = baseY + rotateCy;
 
-  const previewWidth = 760;
-  const previewHeight = 420;
+  const absoluteSeatRects = useMemo(
+    () =>
+      localSeatRects.map((seat) => ({
+        ...seat,
+        x: baseX + seat.x,
+        y: baseY + seat.y,
+      })),
+    [localSeatRects, baseX, baseY]
+  );
 
-  const scale = 2;
-  const sceneOffsetX = previewWidth / 2 - PIVOT_X * scale;
-  const sceneOffsetY = previewHeight / 2 - PIVOT_Y * scale;
+  const previewBounds = useMemo(() => {
+    const points = [];
+
+    const pushRectCorners = (rect) => {
+      points.push(
+        rotatePoint(
+          rect.x,
+          rect.y,
+          state.rotate,
+          rotatePivotX,
+          rotatePivotY
+        )
+      );
+      points.push(
+        rotatePoint(
+          rect.x + rect.w,
+          rect.y,
+          state.rotate,
+          rotatePivotX,
+          rotatePivotY
+        )
+      );
+      points.push(
+        rotatePoint(
+          rect.x + rect.w,
+          rect.y + rect.h,
+          state.rotate,
+          rotatePivotX,
+          rotatePivotY
+        )
+      );
+      points.push(
+        rotatePoint(
+          rect.x,
+          rect.y + rect.h,
+          state.rotate,
+          rotatePivotX,
+          rotatePivotY
+        )
+      );
+    };
+
+    absoluteSeatRects.forEach(pushRectCorners);
+
+    pushRectCorners({
+      x: baseX,
+      y: baseY,
+      w: state.sizeX,
+      h: state.sizeY,
+    });
+
+    points.push({ x: PIVOT_X, y: PIVOT_Y });
+    points.push({ x: baseX, y: baseY });
+
+    const pad = 36;
+
+    const minX = Math.min(...points.map((p) => p.x)) - pad;
+    const minY = Math.min(...points.map((p) => p.y)) - pad;
+    const maxX = Math.max(...points.map((p) => p.x)) + pad;
+    const maxY = Math.max(...points.map((p) => p.y)) + pad;
+
+    return {
+      minX,
+      minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  }, [
+    absoluteSeatRects,
+    baseX,
+    baseY,
+    state.sizeX,
+    state.sizeY,
+    state.rotate,
+    rotatePivotX,
+    rotatePivotY,
+  ]);
 
   return (
-    <div className="table-tool-card">
-      <div className="table-tool-card-title">Стол и места</div>
+    <div className="rect-tool-preview-card">
+      <div className="rect-tool-section-head">
+        <div>
+          <div className="rect-tool-section-title">Предпросмотр</div>
+          <div className="rect-tool-section-note">
+            Красная точка — pivot, синяя — текущий dxdy
+          </div>
+        </div>
 
-      <div className="table-tool-preview">
+        <div className="rect-tool-meta-list">
+          <span className="rect-tool-meta-chip">
+            size: {state.sizeX} × {state.sizeY}
+          </span>
+          <span className="rect-tool-meta-chip">
+            dxdy: [{rotatedDxdy[0]}, {rotatedDxdy[1]}]
+          </span>
+          <span className="rect-tool-meta-chip">rotate: {state.rotate}°</span>
+        </div>
+      </div>
+
+      <div className="rect-tool-preview-stage">
         <svg
-          className="table-tool-preview-svg"
-          viewBox={`0 0 ${previewWidth} ${previewHeight}`}
+          className="rect-tool-preview-svg"
+          viewBox={`${previewBounds.minX} ${previewBounds.minY} ${previewBounds.width} ${previewBounds.height}`}
           xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid meet"
         >
           <defs>
             <pattern
-              id="minorGrid"
+              id="rectMinorGrid"
               width="10"
               height="10"
               patternUnits="userSpaceOnUse"
             >
-              <path d="M 10 0 L 0 0 0 10" className="table-tool-grid-minor" />
+              <path d="M 10 0 L 0 0 0 10" className="rect-tool-grid-minor" />
             </pattern>
 
             <pattern
-              id="majorGrid"
+              id="rectMajorGrid"
               width="30"
               height="30"
               patternUnits="userSpaceOnUse"
             >
-              <rect width="30" height="30" fill="url(#minorGrid)" />
-              <path d="M 30 0 L 0 0 0 30" className="table-tool-grid-major" />
+              <rect width="30" height="30" fill="url(#rectMinorGrid)" />
+              <path d="M 30 0 L 0 0 0 30" className="rect-tool-grid-major" />
             </pattern>
           </defs>
 
           <rect
-            width={previewWidth}
-            height={previewHeight}
-            fill="url(#majorGrid)"
+            x={previewBounds.minX}
+            y={previewBounds.minY}
+            width={previewBounds.width}
+            height={previewBounds.height}
+            fill="url(#rectMajorGrid)"
           />
 
-          <g
-            transform={`translate(${sceneOffsetX} ${sceneOffsetY}) scale(${scale})`}
-          >
-            <g transform={`translate(${baseX} ${baseY})`}>
-              <rect
-                x={0}
-                y={0}
-                width={state.sizeX}
-                height={state.sizeY}
-                className="table-tool-table-origin-svg"
-              />
+          <g transform={`rotate(${state.rotate} ${rotatePivotX} ${rotatePivotY})`}>
+            <rect
+              x={baseX}
+              y={baseY}
+              width={state.sizeX}
+              height={state.sizeY}
+              className="rect-tool-table-origin-svg"
+            />
 
-              <g transform={`rotate(${state.rotate} ${rotateCx} ${rotateCy})`}>
-                {localSeatRects.map((seat, index) => (
-                  <g key={index}>
-                    <rect
-                      x={seat.x}
-                      y={seat.y}
-                      width={seat.w}
-                      height={seat.h}
-                      rx="12"
-                      ry="12"
-                      className="table-tool-seat-svg"
-                    />
-                    <text
-                      x={seat.x + seat.w / 2}
-                      y={seat.y + seat.h / 2}
-                      dominantBaseline="middle"
-                      textAnchor="middle"
-                      className="table-tool-seat-text-svg"
-                    >
-                      {seat.label}
-                    </text>
-                  </g>
-                ))}
+            <rect
+              x={baseX}
+              y={baseY}
+              width={state.sizeX}
+              height={state.sizeY}
+              className="rect-tool-table-svg"
+            />
 
-                <rect
-                  x={0}
-                  y={0}
-                  width={state.sizeX}
-                  height={state.sizeY}
-                  className="table-tool-table-svg"
-                />
-
-                <g
-                  transform={`rotate(${-state.rotate} ${rotateCx} ${rotateCy})`}
-                >
-                  <text
-                    x={state.sizeX / 2}
-                    y={state.sizeY / 2}
-                    dominantBaseline="middle"
-                    textAnchor="middle"
-                    className="table-tool-table-text-svg"
-                  >
-                    {state.tableNumber}
-                  </text>
-                </g>
-              </g>
+            <g transform={`rotate(${-state.rotate} ${rotatePivotX} ${rotatePivotY})`}>
+              <text
+                x={baseX + state.sizeX / 2}
+                y={baseY + state.sizeY / 2}
+                dominantBaseline="middle"
+                textAnchor="middle"
+                className="rect-tool-table-text-svg"
+              >
+                {state.tableNumber}
+              </text>
             </g>
 
-            <circle
-              cx={PIVOT_X}
-              cy={PIVOT_Y}
-              r="4"
-              className="table-tool-pivot-svg"
-            />
-
-            <circle
-              cx={baseX}
-              cy={baseY}
-              r="5"
-              className="table-tool-dxdy-svg"
-            />
+            {absoluteSeatRects.map((seat, index) => (
+              <g key={index}>
+                <rect
+                  x={seat.x}
+                  y={seat.y}
+                  width={seat.w}
+                  height={seat.h}
+                  rx="12"
+                  ry="12"
+                  className="rect-tool-seat-svg"
+                />
+                <text
+                  x={seat.x + seat.w / 2}
+                  y={seat.y + seat.h / 2}
+                  dominantBaseline="middle"
+                  textAnchor="middle"
+                  className="rect-tool-seat-text-svg"
+                >
+                  {seat.label}
+                </text>
+              </g>
+            ))}
           </g>
+
+          <circle
+            cx={PIVOT_X}
+            cy={PIVOT_Y}
+            r="4"
+            className="rect-tool-pivot-svg"
+          />
+
+          <circle
+            cx={baseX}
+            cy={baseY}
+            r="5"
+            className="rect-tool-dxdy-svg"
+          />
         </svg>
       </div>
     </div>
   );
 }
+
 export default function RectTableHelper() {
   const [state, setState] = useState({
     snippetName: 's1',
     mapName: 'map1',
-    tableNumber: 'X',
+    tableNumber: '1',
     sizeX: 34,
     sizeY: 34,
     dx0: 25,
@@ -540,6 +613,7 @@ export default function RectTableHelper() {
     rotate: 0,
     mapText: `[1, '2 =1 1']`,
   });
+  const [copyState, setCopyState] = useState('');
 
   const applyTablePreset = (preset) => {
     setState((prev) => ({
@@ -551,8 +625,6 @@ export default function RectTableHelper() {
       mapText: preset.mapText,
     }));
   };
-
-  // дальше useMemo, функции, return...
 
   const rows = useMemo(() => parseMapText(state.mapText), [state.mapText]);
 
@@ -573,7 +645,7 @@ export default function RectTableHelper() {
 
   const presetMap = useMemo(
     () =>
-      [0, 90, 180, 270].map((deg) => ({
+      [15, 30, 45, 60, 120].map((deg) => ({
         deg,
         dxdy: rotateDxdy(
           [state.dx0, state.dy0],
@@ -584,166 +656,215 @@ export default function RectTableHelper() {
     [state.dx0, state.dy0, state.sizeX, state.sizeY]
   );
 
+  const seatCount = useMemo(
+    () =>
+      rows.reduce((total, row) => {
+        if (row.type !== 'row') return total;
+        return (
+          total + row.tokens.filter((token) => token.type === 'seat').length
+        );
+      }, 0),
+    [rows]
+  );
+
+  const parsedRowCount = useMemo(
+    () => rows.filter((row) => row.type === 'row').length,
+    [rows]
+  );
+
   const copyPhp = async () => {
-    await navigator.clipboard.writeText(phpSnippet);
+    try {
+      await navigator.clipboard.writeText(phpSnippet);
+      setCopyState('Скопировано');
+      window.setTimeout(() => setCopyState(''), 1500);
+    } catch (error) {
+      setCopyState('Ошибка копирования');
+      window.setTimeout(() => setCopyState(''), 1500);
+    }
   };
 
   return (
-    <div className="table-tool-page">
-      <div className="table-tool-wrap">
-        <div className="table-tool-header">
-          <div className="table-tool-title">Конструктор шаблона стола</div>
-          <div className="table-tool-subtitle">
-            Стул: <b>24px</b> · Интервал: <b>6px</b> · Шаг: <b>30px</b>
+    <div className="rect-tool">
+      <div className="rect-tool-topline">
+        <div>
+          <div className="rect-tool-title">Конструктор прямоугольного стола</div>
+          <div className="rect-tool-subtitle">
+            Быстрый рабочий интерфейс без лишних блоков
           </div>
         </div>
+      </div>
 
-        <div className="table-tool-layout">
-          <div className="table-tool-left">
-            <div className="table-tool-card">
-              <div className="table-tool-card-title">Входные данные</div>
+      <div className="rect-tool-layout">
+        <div className="rect-tool-sidebar">
+          <Section
+            title="Шаблоны"
+            note="Быстрый старт с типовыми размерами и картами"
+          >
+            <div className="rect-tool-preset-grid">
+              {TABLE_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  className="rect-tool-preset-btn"
+                  onClick={() => applyTablePreset(preset)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </Section>
 
-              <div className="table-tool-grid table-tool-grid-2">
-                <Field label="Имя шаблона">
-                  <TextInput
-                    value={state.snippetName}
-                    onChange={(v) =>
-                      setState((prev) => ({ ...prev, snippetName: v }))
-                    }
-                  />
-                </Field>
-
-                <Field label="Имя карты">
-                  <TextInput
-                    value={state.mapName}
-                    onChange={(v) =>
-                      setState((prev) => ({ ...prev, mapName: v }))
-                    }
-                  />
-                </Field>
-              </div>
-
-              <div className="table-tool-grid table-tool-grid-2">
-                <Field label="Номер стола">
-                  <TextInput
-                    value={state.tableNumber}
-                    onChange={(v) =>
-                      setState((prev) => ({ ...prev, tableNumber: v }))
-                    }
-                  />
-                </Field>
-
-                <Field label="Угол поворота">
-                  <NumberInput
-                    value={state.rotate}
-                    onChange={(v) =>
-                      setState((prev) => ({ ...prev, rotate: v }))
-                    }
-                  />
-                </Field>
-              </div>
-              <div className="table-tool-presets-block">
-                <div className="table-tool-label">Шаблоны столов</div>
-
-                <div className="table-tool-presets-grid">
-                  {TABLE_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className="table-tool-preset-btn"
-                      onClick={() => applyTablePreset(preset)}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="table-tool-grid table-tool-grid-2">
-                <Field label="size X">
-                  <NumberInput
-                    value={state.sizeX}
-                    onChange={(v) =>
-                      setState((prev) => ({ ...prev, sizeX: v }))
-                    }
-                  />
-                </Field>
-
-                <Field label="size Y">
-                  <NumberInput
-                    value={state.sizeY}
-                    onChange={(v) =>
-                      setState((prev) => ({ ...prev, sizeY: v }))
-                    }
-                  />
-                </Field>
-              </div>
-
-              <div className="table-tool-grid table-tool-grid-2">
-                <Field label="dxdy X для 0°">
-                  <NumberInput
-                    value={state.dx0}
-                    onChange={(v) => setState((prev) => ({ ...prev, dx0: v }))}
-                  />
-                </Field>
-
-                <Field label="dxdy Y для 0°">
-                  <NumberInput
-                    value={state.dy0}
-                    onChange={(v) => setState((prev) => ({ ...prev, dy0: v }))}
-                  />
-                </Field>
-              </div>
-
-              <Field label="Обновлённый dxdy">
-                <div className="table-tool-output-box">
-                  [{rotatedDxdy[0]}, {rotatedDxdy[1]}]
-                </div>
+          <Section
+            title="Параметры"
+            note="Размеры, имена, номер стола, поворот и исходный dxdy"
+          >
+            <div className="rect-tool-grid rect-tool-grid-2">
+              <Field label="Имя шаблона">
+                <TextInput
+                  value={state.snippetName}
+                  onChange={(v) =>
+                    setState((prev) => ({ ...prev, snippetName: v }))
+                  }
+                />
               </Field>
 
-              <Field label="map">
-                <textarea
-                  value={state.mapText}
-                  onChange={(e) =>
-                    setState((prev) => ({ ...prev, mapText: e.target.value }))
+              <Field label="Имя карты">
+                <TextInput
+                  value={state.mapName}
+                  onChange={(v) =>
+                    setState((prev) => ({ ...prev, mapName: v }))
                   }
-                  rows={10}
-                  className="table-tool-textarea"
                 />
               </Field>
             </div>
 
-            <div className="table-tool-card">
-              <div className="table-tool-card-head">
-                <div className="table-tool-card-title">Обновлённые данные</div>
-                <button className="table-tool-btn" onClick={copyPhp}>
-                  Копировать
-                </button>
-              </div>
+            <div className="rect-tool-grid rect-tool-grid-2">
+              <Field label="Номер стола">
+                <TextInput
+                  value={state.tableNumber}
+                  onChange={(v) =>
+                    setState((prev) => ({ ...prev, tableNumber: v }))
+                  }
+                />
+              </Field>
 
-              <div className="table-tool-presets">
-                <div className="table-tool-presets-title">
-                  DXDY для 0 / 90 / 180 / 270
-                </div>
-                {presetMap.map((item) => (
-                  <div key={item.deg} className="table-tool-presets-row">
-                    {item.deg}° =&gt; [{item.dxdy[0]}, {item.dxdy[1]}]
-                  </div>
-                ))}
-              </div>
-
-              <textarea
-                readOnly
-                value={phpSnippet}
-                className="table-tool-textarea table-tool-textarea-readonly"
-                rows={16}
-              />
+              <Field label="Поворот">
+                <NumberInput
+                  value={state.rotate}
+                  onChange={(v) => setState((prev) => ({ ...prev, rotate: v }))}
+                />
+              </Field>
             </div>
-          </div>
 
-          <div className="table-tool-right">
-            <TablePreview state={state} rows={rows} rotatedDxdy={rotatedDxdy} />
-            <MapPreview rows={rows} />
-          </div>
+            <Field label="Быстрые повороты" hint="Популярные промежуточные углы">
+              <QuickRotate
+                value={state.rotate}
+                onChange={(v) => setState((prev) => ({ ...prev, rotate: v }))}
+              />
+            </Field>
+
+            <div className="rect-tool-grid rect-tool-grid-2">
+              <Field label="size X">
+                <NumberInput
+                  value={state.sizeX}
+                  onChange={(v) => setState((prev) => ({ ...prev, sizeX: v }))}
+                />
+              </Field>
+
+              <Field label="size Y">
+                <NumberInput
+                  value={state.sizeY}
+                  onChange={(v) => setState((prev) => ({ ...prev, sizeY: v }))}
+                />
+              </Field>
+            </div>
+
+            <div className="rect-tool-grid rect-tool-grid-2">
+              <Field label="dxdy X для 0°">
+                <NumberInput
+                  value={state.dx0}
+                  onChange={(v) => setState((prev) => ({ ...prev, dx0: v }))}
+                />
+              </Field>
+
+              <Field label="dxdy Y для 0°">
+                <NumberInput
+                  value={state.dy0}
+                  onChange={(v) => setState((prev) => ({ ...prev, dy0: v }))}
+                />
+              </Field>
+            </div>
+
+            <div className="rect-tool-stats">
+              <div className="rect-tool-stat">
+                <div className="rect-tool-stat-label">Актуальный dxdy</div>
+                <div className="rect-tool-stat-value">
+                  [{rotatedDxdy[0]}, {rotatedDxdy[1]}]
+                </div>
+              </div>
+
+              <div className="rect-tool-stat">
+                <div className="rect-tool-stat-label">Рядов</div>
+                <div className="rect-tool-stat-value">{parsedRowCount}</div>
+              </div>
+
+              <div className="rect-tool-stat">
+                <div className="rect-tool-stat-label">Мест</div>
+                <div className="rect-tool-stat-value">{seatCount}</div>
+              </div>
+            </div>
+          </Section>
+
+          <Section
+            title="Карта мест"
+            note="Только ввод. Без отдельного разбора карты"
+          >
+            <Field
+              label="map"
+              hint="[1] — пропуск, [1, '2 =1 1'] — ряд, =1 — шаг 30px"
+            >
+              <textarea
+                value={state.mapText}
+                onChange={(e) =>
+                  setState((prev) => ({ ...prev, mapText: e.target.value }))
+                }
+                rows={12}
+                className="rect-tool-textarea"
+              />
+            </Field>
+          </Section>
+        </div>
+
+        <div className="rect-tool-main">
+          <TablePreview state={state} rows={rows} rotatedDxdy={rotatedDxdy} />
+
+          <Section
+            title="Готовые данные"
+            note="PHP-шаблон и быстрые значения по популярным углам"
+            actions={
+              <button className="rect-tool-copy-btn" onClick={copyPhp}>
+                {copyState || 'Копировать'}
+              </button>
+            }
+          >
+            <div className="rect-tool-angle-summary">
+              {presetMap.map((item) => (
+                <div key={item.deg} className="rect-tool-angle-summary-item">
+                  <span>{item.deg}°</span>
+                  <strong>
+                    [{item.dxdy[0]}, {item.dxdy[1]}]
+                  </strong>
+                </div>
+              ))}
+            </div>
+
+            <textarea
+              readOnly
+              value={phpSnippet}
+              className="rect-tool-code"
+              rows={18}
+            />
+          </Section>
         </div>
       </div>
     </div>

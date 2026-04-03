@@ -1,0 +1,402 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: #212529;
+  font-family: Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.hall-page {
+  min-height: 100%;
+  background: #ffffff;
+}
+
+.container {
+  width: 100%;
+  max-width: 1170px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.workspace-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.wrap {
+  min-height: 100%;
+  height: auto;
+  margin: 0 auto -61px;
+  padding: 0 0 60px;
+}
+
+.wrap > .container,
+.wrap > .workspace-container {
+  padding-top: 16px;
+  padding-bottom: 20px;
+}
+
+.footer {
+  height: 60px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  padding-top: 20px;
+}
+
+.hall-footer-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.hall-footer-inner p {
+  margin: 0;
+}
+
+/* Главная */
+
+.hall-home-header {
+  margin-bottom: 20px;
+}
+
+.hall-home-title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #212529;
+}
+
+.hall-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.hall-group {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.hall-group legend {
+  padding: 0 6px;
+  font-size: 22px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.hall-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hall-tool-button {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #f8f9fa;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hall-tool-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.hall-tool-button-title,
+.hall-tool-button-description {
+  display: block;
+}
+
+.hall-tool-button-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.hall-tool-button-description {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6c757d;
+}
+
+/* Открытый инструмент */
+
+.hall-tool-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.hall-tool-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.hall-back-button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #f8f9fa;
+  color: #212529;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hall-back-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.hall-tool-heading {
+  min-width: 0;
+}
+
+.hall-tool-title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #212529;
+}
+
+.hall-tool-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6c757d;
+}
+
+.hall-tool-stage {
+  min-width: 0;
+}
+
+/* Встраивание существующего инструмента */
+
+.hall-tool-stage .table-tool-page {
+  min-height: auto;
+  background: transparent;
+  color: #212529;
+  font-family: Arial, sans-serif;
+}
+
+.hall-tool-stage .table-tool-wrap {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hall-tool-stage .table-tool-header,
+.hall-tool-stage .table-tool-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.hall-tool-stage .table-tool-header {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.hall-tool-stage .table-tool-card {
+  padding: 16px;
+}
+
+.hall-tool-stage .table-tool-title {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #212529;
+}
+
+.hall-tool-stage .table-tool-subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6c757d;
+}
+
+.hall-tool-stage .table-tool-card-title {
+  margin-bottom: 14px;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #212529;
+}
+
+.hall-tool-stage .table-tool-label {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
+.hall-tool-stage .table-tool-input,
+.hall-tool-stage .table-tool-textarea,
+.hall-tool-stage .table-tool-output-box {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #212529;
+  box-sizing: border-box;
+  box-shadow: none;
+}
+
+.hall-tool-stage .table-tool-input,
+.hall-tool-stage .table-tool-output-box {
+  min-height: 38px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.hall-tool-stage .table-tool-textarea {
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.hall-tool-stage .table-tool-textarea-readonly,
+.hall-tool-stage .table-tool-output-box {
+  background: #f8f9fa;
+}
+
+.hall-tool-stage .table-tool-input:focus,
+.hall-tool-stage .table-tool-textarea:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.18);
+  outline: none;
+}
+
+.hall-tool-stage .table-tool-btn,
+.hall-tool-stage .table-tool-preset-btn {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #f8f9fa;
+  color: #212529;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hall-tool-stage .table-tool-btn {
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.hall-tool-stage .table-tool-preset-btn {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.hall-tool-stage .table-tool-btn:hover,
+.hall-tool-stage .table-tool-preset-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.hall-tool-stage .table-tool-presets,
+.hall-tool-stage .table-tool-preview,
+.hall-tool-stage .table-tool-map-row-body {
+  border-color: #ddd;
+  background: #f8f9fa;
+}
+
+.hall-tool-stage .table-tool-map-skip {
+  border: 1px dashed #ced4da;
+  background: #f1f3f5;
+  color: #495057;
+}
+
+.hall-tool-stage .table-tool-map-seat {
+  border: 1px solid #495057;
+}
+
+.hall-tool-stage code {
+  background: #f1f3f5;
+  border-radius: 4px;
+}
+
+@media (max-width: 991px) {
+  .hall-groups-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hall-tool-topbar-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 767px) {
+  .hall-home-title {
+    font-size: 32px;
+  }
+
+  .hall-tool-title {
+    font-size: 22px;
+  }
+
+  .hall-tool-stage .table-tool-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hall-tool-stage .table-tool-right {
+    order: -1;
+  }
+
+  .hall-tool-stage .table-tool-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .hall-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
